@@ -40,6 +40,9 @@ env:
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "eqXxhT2R/eCXwaQC0dn14iB6Rvd7KdEsz9lvcqo/ZCSduHVdQbIcLKxI/gLXjYyPOurAgMDGlbiqe/Sz/29eH+jcYlNsLtDpSoJFsgnWe9KlEqBrbO+eGH5OoAabgJthcGygTwbFnpsiY7SvLG62pSYUrSfToCVkouSiUXeZb5Q="
 
+before install: 
+- echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
 addons:
   coverity_scan:
     project:
