@@ -1,20 +1,26 @@
-project(ff7tk)
-set(PROJECT_VERSION "0.80.16")
 cmake_minimum_required(VERSION 3.8)
+project(ff7tk VERSION 0.80.16)
 
-option(BuildWidgetGallery "Build the widget based gallery" OFF)
-option(BuildQmlGallery "Build the qml based gallery" OFF)
-option(BuildDocs "Build and Install Documents (Requires Doxygen)" OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-#optional Parts.
-if(BuildWidgetGallery)
+option(WIDGET_GALLERY "Build the widget based gallery" OFF)
+option(QML_GALLERY "Build the qml based gallery" OFF)
+option(DOCS "Build and Install Documents (Requires Doxygen)" OFF)
+
+if(WIDGET_GALLERY)
     add_subdirectory(ff7tkWidgetGallery)
 endif()
 
-if(BuildQmlGallery)
+if(QML_GALLERY)
     add_subdirectory(ff7tkQmlGallery)
 endif()
 
-if (BuildDocs)
+if (DOCS)
     add_subdirectory(docs)
 endif()
+
+add_subdirectory(src)
