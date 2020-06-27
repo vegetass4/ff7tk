@@ -80,6 +80,24 @@ struct FF7SaveInfo::FF7SaveInfoPrivate {
     static const int PS_SIGNATURE_SIZE = 0x0014;
     inline static const QByteArray PS_SIGNING_KEY= QByteArray::fromRawData("\xAB\x5A\xBC\x9F\xC1\xF4\x9D\xE6\xA0\x51\xDB\xAE\xFA\x51\x88\x59", 0x10);
     inline static const QByteArray PS_SIGNING_IV= QByteArray::fromRawData("\xB3\x0F\xFE\xED\xB7\xDC\x5E\xB7\x13\x3D\xA6\x0D\x1B\x6B\x2C\xDC", 0x10);
+    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PS4 SAVE INFO~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    static const int PS4_FILE_SIZE = 0xA00000;
+    static const int PS4_FILE_HEADER_SIZE = 0x00AF;
+    inline static const QString PS4_FILE_DESCRIPTION = tr("PS4 Save File");
+    inline static const QStringList PS4_VALID_EXTENSIONS { QStringLiteral("*.ff7") };
+    inline static const QRegExp PS4_VALID_NAME_REGEX = QRegExp(QStringLiteral("save0[0-9].ff7"));
+    inline static const QByteArray PS4_FILE_ID = QByteArray::fromRawData("\x17\x00\x00\x00\x00\x00\x00\x00", 8);
+    static const int PS4_BINFILE_SIZE = 0x60;
+    static const int PS4_SEED_OFFSET = 0x0008;
+    static const int PS4_SIGNATURE_OFFSET = 0x001C;
+    static const int PS4_FILE_TYPE_OFFSET = 0x0038;
+    static const int PS4_FILE_DISP_SIZE_OFFSET = 0x0040;
+    static const int PS4_FILE_SIZE_OFFSET = 0x005C;
+    inline static const QByteArray PS4_FILE_HEADER = QByteArray::fromRawData("\x00\x56\x53\x50\x00\x00\x00\x00\x04\xbc\x97\x58\x11\x0f\x7e\x85\xc7\x4f\x2f\xd0\x5a\x28\xb6\x25\xe6\x9a\x6e\xa1\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x14\x00\x00\x00\x01\x00\x00\x00\x00\x20\x00\x00\x84\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x03\x90\x00\x00\x42\x41\x53\x43\x55\x53\x2d\x39\x34\x31\x36\x33\x46\x46\x37\x2d\x53\x30\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", PS3_FILE_HEADER_SIZE);
+    /*~~~~~~~ PS4 Signing ~~~~~~~~~~~~~~*/
+    static const int PS4_SIGNATURE_SIZE = 0x0014;
+    inline static const QByteArray PS4_SIGNING_KEY= QByteArray::fromRawData("\xAB\x5A\xBC\x9F\xC1\xF4\x9D\xE6\xA0\x51\xDB\xAE\xFA\x51\x88\x59", 0x10);
+    inline static const QByteArray PS4_SIGNING_IV= QByteArray::fromRawData("\xB3\x0F\xFE\xED\xB7\xDC\x5E\xB7\x13\x3D\xA6\x0D\x1B\x6B\x2C\xDC", 0x10);
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Mem Card Format~~~~~~~~~~~~~~~~~~~*/
     static const int VMC_FILE_SIZE = 0x20000;
     static const int VMC_FILE_HEADER_SIZE = 0x2000;
@@ -160,6 +178,8 @@ int FF7SaveInfo::fileSize(FF7SaveInfo::FORMAT format) const
     case (FORMAT::VMC): return d->VMC_FILE_SIZE;
     case (FORMAT::PSP): return d->PSP_FILE_SIZE;
     case (FORMAT::PS3): return d->PS3_FILE_SIZE;
+    case (FORMAT::PS4): return d->PS4_FILE_SIZE;
+    case (FORMAT::PS4BIN): return d->PS4_BINFILE_SIZE;
     case (FORMAT::DEX): return d->DEX_FILE_SIZE;
     case (FORMAT::VGS): return d->VGS_FILE_SIZE;
     case (FORMAT::SWITCH): return d->SWITCH_FILE_SIZE;
@@ -176,6 +196,7 @@ int FF7SaveInfo::fileHeaderSize(FF7SaveInfo::FORMAT format) const
     case (FORMAT::VMC): return d->VMC_FILE_HEADER_SIZE;
     case (FORMAT::PSP): return d->PSP_FILE_HEADER_SIZE;
     case (FORMAT::PS3): return d->PS3_FILE_HEADER_SIZE;
+    case (FORMAT::PS4): return d->PS4_FILE_HEADER_SIZE;
     case (FORMAT::DEX): return d->DEX_FILE_HEADER_SIZE;
     case (FORMAT::VGS): return d->VGS_FILE_HEADER_SIZE;
     case (FORMAT::SWITCH): return d->SWITCH_FILE_HEADER_SIZE;
@@ -192,6 +213,7 @@ int FF7SaveInfo::slotHeaderSize(FF7SaveInfo::FORMAT format) const
     case (FORMAT::VMC):
     case (FORMAT::PSP):
     case (FORMAT::PS3):
+    case (FORMAT::PS4):
     case (FORMAT::DEX):
     case FORMAT::PGE:
     case FORMAT::PDA:
@@ -207,6 +229,7 @@ int FF7SaveInfo::slotFooterSize(FF7SaveInfo::FORMAT format) const
     case (FORMAT::VMC):
     case (FORMAT::PSP):
     case (FORMAT::PS3):
+    case (FORMAT::PS4):
     case (FORMAT::DEX):
     case FORMAT::PGE:
     case FORMAT::PDA:
@@ -222,6 +245,7 @@ int FF7SaveInfo::slotCount(FF7SaveInfo::FORMAT format) const
     case FORMAT::PGE:
     case (FORMAT::PSX):
     case (FORMAT::PS3): return 1;
+    case (FORMAT::PS4): return 1;
     case (FORMAT::VMC):
     case (FORMAT::PSP):
     case (FORMAT::DEX):
@@ -240,6 +264,7 @@ QByteArray FF7SaveInfo::fileIdentifier(FF7SaveInfo::FORMAT format) const
     case (FORMAT::VMC): return d->VMC_FILE_ID;
     case (FORMAT::PSP): return d->PSP_FILE_ID;
     case (FORMAT::PS3): return d->PS3_FILE_ID;
+    case (FORMAT::PS4): return d->PS4_FILE_ID;
     case (FORMAT::DEX): return d->DEX_FILE_ID;
     case (FORMAT::VGS): return d->VGS_FILE_ID;
     case (FORMAT::SWITCH): return d->SWITCH_FILE_ID;
@@ -257,6 +282,7 @@ QByteArray FF7SaveInfo::fileHeader(FF7SaveInfo::FORMAT format) const
     case (FORMAT::VMC): return QByteArray(fileIdentifier(format)).append(fileHeaderSize(format) - fileIdentifier(format).length(), 0x00);
     case (FORMAT::PSP): return d->PSP_FILE_HEADER;
     case (FORMAT::PS3): return d->PS3_FILE_HEADER;
+    case (FORMAT::PS4): return d->PS4_FILE_HEADER;
     default: return QByteArray();
     }
 }
@@ -270,6 +296,7 @@ QByteArray FF7SaveInfo::slotHeader(FF7SaveInfo::FORMAT format, int slot) const
     case (FORMAT::PSX):
     case (FORMAT::PSP):
     case (FORMAT::PS3):
+    case (FORMAT::PS4):
     case (FORMAT::DEX):
     case (FORMAT::VGS):
     case (FORMAT::VMC): return QByteArray(d->PSX_SLOT_HEADER.at(slot)).append(256, 0x00);
@@ -285,6 +312,7 @@ QByteArray FF7SaveInfo::slotFooter(FF7SaveInfo::FORMAT format) const
     case (FORMAT::PSX):
     case (FORMAT::PSP):
     case (FORMAT::PS3):
+    case (FORMAT::PS4):
     case (FORMAT::DEX):
     case (FORMAT::VGS):
     case (FORMAT::VMC): return QByteArray(d->PSX_SLOT_FOOTER_SIZE, 0x00);
@@ -360,6 +388,7 @@ QRegExp FF7SaveInfo::validNameRegExp(FF7SaveInfo::FORMAT format) const
     case (FORMAT::PSX): return d->PSX_VALID_NAME_REGEX;
     case (FORMAT::PSP): return d->PSP_VALID_NAME_REGEX;
     case (FORMAT::PS3): return d->PS3_VALID_NAME_REGEX;
+    case (FORMAT::PS4): return d->PS4_VALID_NAME_REGEX;
     case (FORMAT::DEX): return d->DEX_VALID_NAME_REGEX;
     case (FORMAT::VGS): return d->VGS_VALID_NAME_REGEX;
     case (FORMAT::VMC): return d->VMC_VALID_NAME_REGEX;
@@ -377,6 +406,7 @@ QString FF7SaveInfo::typeDescription(FF7SaveInfo::FORMAT format) const
     case (FORMAT::PSX): return d->PSX_FILE_DESCRIPTION;
     case (FORMAT::PSP): return d->PSP_FILE_DESCRIPTION;
     case (FORMAT::PS3): return d->PS3_FILE_DESCRIPTION;
+    case (FORMAT::PS4): return d->PS4_FILE_DESCRIPTION;
     case (FORMAT::DEX): return d->DEX_FILE_DESCRIPTION;
     case (FORMAT::VGS): return d->VGS_FILE_DESCRIPTION;
     case (FORMAT::VMC): return d->VMC_FILE_DESCRIPTION;
@@ -394,6 +424,7 @@ QStringList FF7SaveInfo::typeExtension(FF7SaveInfo::FORMAT format) const
     case (FORMAT::PSX): return d->PSX_VALID_EXTENSIONS;
     case (FORMAT::PSP): return d->PSP_VALID_EXTENSIONS;
     case (FORMAT::PS3): return d->PS3_VALID_EXTENSIONS;
+    case (FORMAT::PS4): return d->PS4_VALID_EXTENSIONS;
     case (FORMAT::DEX): return d->DEX_VALID_EXTENSIONS;
     case (FORMAT::VGS): return d->VGS_VALID_EXTENSIONS;
     case (FORMAT::VMC): return d->VMC_VALID_EXTENSIONS;
@@ -418,6 +449,7 @@ QString FF7SaveInfo::knownTypesFilter() const
         .arg(d->PSX_VALID_EXTENSIONS.join(QStringLiteral(" ")))
         .arg(d->PSP_VALID_EXTENSIONS.join(QStringLiteral(" ")))
         .arg(d->PS3_VALID_EXTENSIONS.join(QStringLiteral(" ")))
+        .arg(d->PS4_VALID_EXTENSIONS.join(QStringLiteral(" ")))
         .arg(d->DEX_VALID_EXTENSIONS.join(QStringLiteral(" ")))
         .arg(d->VGS_VALID_EXTENSIONS.join(QStringLiteral(" ")))
         .arg(d->VMC_VALID_EXTENSIONS.join(QStringLiteral(" ")))
@@ -432,6 +464,7 @@ QString FF7SaveInfo::knownTypesFilter() const
         .arg(typeFilter(FORMAT::VMC))
         .arg(typeFilter(FORMAT::PSX))
         .arg(typeFilter(FORMAT::PS3))
+        .arg(typeFilter(FORMAT::PS4))
         .arg(typeFilter(FORMAT::PSP))
         .arg(typeFilter(FORMAT::DEX))
         .arg(typeFilter(FORMAT::VGS))

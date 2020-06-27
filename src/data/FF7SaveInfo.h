@@ -15,6 +15,17 @@
 /****************************************************************************/
 #pragma once
 
+#ifdef _MSC_VER
+#   define PACK(structure)          \
+    __pragma(pack(push, 1))     \
+    structure                   \
+    __pragma(pack(pop))
+#elif defined(__MINGW32__)
+#define PACK(structure) structure __attribute__ ((gcc_struct, __packed__))
+#else
+#define PACK(structure) structure Q_PACKED
+#endif
+
 #include <QObject>
 
 class QJSEngine;
@@ -35,6 +46,8 @@ public:
         VMC,      //!< Virtual Memory Card
         PSP,      //!< PSP Save Format
         PS3,      //!< PS3 Save Format
+        PS4,      //!< PS4 Save Format
+        PS4BIN,   //!< PS4 BIN File (pfsSKKey)
         DEX,      //!< Dex Format
         VGS,      //!< VGS Format
         SWITCH,   //!< Switch Format
@@ -66,6 +79,21 @@ public:
         SAVESIZE /**< Size of save data 4 bytes match SIZEDISPLAY's value */
     };
     Q_ENUM(PSVINFO)
+
+    /**
+     *  \struct pfsSKKey
+     *  \brief Extra bin file (Sealedkey) used for PS4 format
+     */
+PACK(
+    struct pfsSKKey {
+        quint8 MAGIC[8];   /**< [0x0000] MAGIC (0x08) */
+        quint16 KEYSET;    /**< [0x0008] KEYSET (0x02) */
+        quint8 pad[6];     /**< [0x000A] Padding zeros (0x06) */
+        quint8 IV[16];     /**< [0x0010] AES IV (0x10) */
+        quint8 KEY[32];    /**< [0x0020] AES KEY (0x20) */
+        quint8 SHA256[32]; /**< [0x0040] AES SHA256 (0x20) */
+    }
+);
 
     /**
      * @brief Get the FF7SaveInfo Instance.
