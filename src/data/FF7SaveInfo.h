@@ -252,6 +252,12 @@ PACK(
      */
     Q_INVOKABLE QString knownTypesFilter() const;
 
+    /**
+     * @brief If the type uses PC format internally
+     * @param format : The Save Format you wish to know about
+     * @return true if the it uses PC format internally
+     */
+    Q_INVOKABLE bool internalPcFormat(FF7SaveInfo::FORMAT format) const;
 private:
     FF7SaveInfo *operator = (FF7SaveInfo &other) = delete;
     FF7SaveInfo(const FF7SaveInfo &other) = delete;

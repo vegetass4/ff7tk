@@ -245,7 +245,7 @@ int FF7SaveInfo::slotCount(FF7SaveInfo::FORMAT format) const
     case FORMAT::PGE:
     case (FORMAT::PSX):
     case (FORMAT::PS3): return 1;
-    case (FORMAT::PS4): return 1;
+    case (FORMAT::PS4):
     case (FORMAT::VMC):
     case (FORMAT::PSP):
     case (FORMAT::DEX):
@@ -325,6 +325,7 @@ QByteArray FF7SaveInfo::signingKey(FF7SaveInfo::FORMAT format) const
     switch (format) {
     case (FORMAT::PSP):
     case (FORMAT::PS3): return d->PS_SIGNING_KEY;
+    case (FORMAT::PS4): return d->PS4_SIGNING_KEY;
     default: return QByteArray();
     }
 }
@@ -345,6 +346,7 @@ QByteArray FF7SaveInfo::signingIV(FF7SaveInfo::FORMAT format) const
     switch (format) {
     case (FORMAT::PSP):
     case (FORMAT::PS3): return d->PS_SIGNING_IV;
+    case (FORMAT::PS4): return d->PS4_SIGNING_IV;
     default: return QByteArray();
     }
 }
@@ -354,6 +356,7 @@ int FF7SaveInfo::fileSeedOffset(FF7SaveInfo::FORMAT format) const
     switch (format) {
     case (FORMAT::PSP): return d->PSP_SEED_OFFSET;
     case (FORMAT::PS3): return d->PS3_SEED_OFFSET;
+    case (FORMAT::PS4): return d->PS4_SEED_OFFSET;
     default: return -1;
     }
 }
@@ -363,6 +366,7 @@ int FF7SaveInfo::fileSignatureOffset(FF7SaveInfo::FORMAT format) const
     switch (format) {
     case (FORMAT::PSP): return d->PSP_SIGNATURE_OFFSET;
     case (FORMAT::PS3): return d->PS3_SIGNATURE_OFFSET;
+    case (FORMAT::PS4): return d->PS4_SIGNATURE_OFFSET;
     default: return -1;
     }
 }
@@ -372,6 +376,7 @@ int FF7SaveInfo::fileSignatureSize(FF7SaveInfo::FORMAT format) const
     switch (format) {
     case (FORMAT::PSP):
     case (FORMAT::PS3): return d->PS_SIGNATURE_SIZE;
+    case (FORMAT::PS4): return d->PS4_SIGNATURE_SIZE;
     default: return 0;
     }
 }
@@ -379,6 +384,24 @@ int FF7SaveInfo::fileSignatureSize(FF7SaveInfo::FORMAT format) const
 int FF7SaveInfo::slotSize() const
 {
     return d->_slotSize;
+}
+
+bool FF7SaveInfo::internalPcFormat(FF7SaveInfo::FORMAT format) const
+{
+    switch (format) {
+    case (FORMAT::SWITCH):
+    case (FORMAT::PS4):
+    case (FORMAT::PC): return true;
+    case (FORMAT::PSP):
+    case (FORMAT::PS3):
+    case (FORMAT::DEX):
+    case (FORMAT::VGS):
+    case (FORMAT::VMC):
+    case FORMAT::PGE:
+    case FORMAT::PDA:
+    case (FORMAT::PSX): return false;
+    default: return false;
+    }
 }
 
 QRegExp FF7SaveInfo::validNameRegExp(FF7SaveInfo::FORMAT format) const
